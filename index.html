@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Modul Ajar - Pembelajaran Mendalam</title>
+    <!-- Memuat Tailwind CSS untuk tata letak modern dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Font Inter dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Pengaturan khusus saat dokumen dicetak atau disimpan sebagai PDF */
+        @page {
+            size: A4;
+            margin: 15mm 18mm 15mm 18mm;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white !important;
+                color: black !important;
+                font-size: 11pt;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                display: block !important;
+            }
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+            table {
+                page-break-inside: auto;
+                width: 100% !important;
+            }
+            tr, .signature-block {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            .page-break {
+                page-break-before: always;
+                break-before: page;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+    <!-- Notifikasi Toast (Pengganti alert) -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 no-print">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span id="toastMessage" class="text-sm font-medium">Identitas Modul Ajar berhasil diperbarui!</span>
+    </div>
+
+    <!-- Header Aplikasi -->
+    <header class="bg-indigo-700 text-white shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">Generator Modul Ajar (Deep Learning)</h1>
+                <p class="text-indigo-200 text-xs sm:text-sm">Sesuaikan identitas sekolah & guru, lalu terapkan atau cetak dokumen secara instan.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="copyDocument()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg border border-indigo-400 transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    Salin Teks
+                </button>
+                <button onclick="window.print()" class="bg-white text-indigo-700 hover:bg-indigo-50 text-sm font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Cetak / Simpan PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kontainer Utama -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Panel Kiri: Formulir Pengaturan Identitas -->
+        <aside class="lg:col-span-4 no-print">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-6">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                    <span class="bg-indigo-100 text-indigo-700 p-2 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </span>
+                    <h2 class="text-lg font-bold text-slate-800">Identitas Modul Ajar</h2>
+                </div>
+
+                <form id="identityForm" onsubmit="generateModul(event)" class="space-y-4">
+                    <!-- Nama Sekolah -->
+                    <div>
+                        <label for="inputSekolah" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nama Sekolah / Satuan Pendidikan</label>
+                        <input type="text" id="inputSekolah" value="SMP Negeri 1 Nusantara" placeholder="Contoh: SMP Negeri 1 Nusantara" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- Mata Pelajaran -->
+                    <div>
+                        <label for="inputMapel" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Mata Pelajaran</label>
+                        <input type="text" id="inputMapel" value="Matematika" placeholder="Contoh: Matematika / Informatika" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- Tahun Ajaran & Semester (Grid 2 Kolom) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="inputTahunAjaran" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Tahun Ajaran</label>
+                            <input type="text" id="inputTahunAjaran" value="2026/2027" placeholder="2026/2027" required
+                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label for="inputSemester" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Semester</label>
+                            <select id="inputSemester" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-white">
+                                <option value="Ganjil" selected>Ganjil</option>
+                                <option value="Genap">Genap</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Jenjang/Fase & Kelas (Grid 2 Kolom) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="inputFase" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Jenjang / Fase</label>
+                            <input type="text" id="inputFase" value="SMP / Fase D" placeholder="Contoh: SMP / Fase D" required
+                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label for="inputKelas" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Kelas</label>
+                            <input type="text" id="inputKelas" value="VIII (Delapan)" placeholder="Contoh: VIII / X" required
+                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Jumlah Pertemuan & Alokasi Waktu (Grid 2 Kolom) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="inputPertemuan" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Jumlah Pertemuan</label>
+                            <input type="text" id="inputPertemuan" value="1 Pertemuan" placeholder="Contoh: 2 Pertemuan" required
+                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label for="inputAlokasi" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Alokasi Waktu</label>
+                            <input type="text" id="inputAlokasi" value="2 × 45 Menit" placeholder="Contoh: 2 × 45 Menit" required
+                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Model Pembelajaran -->
+                    <div>
+                        <label for="inputModel" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Model Pembelajaran</label>
+                        <input type="text" id="inputModel" value="Realistic Mathematics Education (RME) & Problem-Based Learning" placeholder="Contoh: Project-Based Learning / Discovery Learning" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- Materi Pokok -->
+                    <div>
+                        <label for="inputMateri" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Materi Pokok / Topik</label>
+                        <input type="text" id="inputMateri" value="Sistem Persamaan Linear Dua Variabel (SPLDV) – Konsep dan Pemodelan Kontekstual" placeholder="Masukkan topik/materi pokok" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- Tujuan Pembelajaran -->
+                    <div>
+                        <label for="inputTujuan" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Tujuan Pembelajaran (1 poin per baris)</label>
+                        <textarea id="inputTujuan" rows="4" placeholder="Tuliskan tujuan pembelajaran (pisahkan dengan baris baru untuk membuat poin bernomor)" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition leading-relaxed">Memodelkan situasi permasalahan sehari-hari ke dalam bentuk Sistem Persamaan Linear Dua Variabel (SPLDV) dengan mendefinisikan variabel secara tepat.
+Menentukan penyelesaian SPLDV menggunakan strategi penalaran logis (visual/substitusi intuitif) sebelum beralih ke prosedur formal.
+Mengevaluasi ketepatan solusi matematis yang diperoleh terhadap konteks permasalahan nyata.</textarea>
+                    </div>
+
+                    <hr class="border-slate-100 my-2">
+
+                    <!-- Nama Guru Mata Pelajaran -->
+                    <div>
+                        <label for="inputGuru" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nama Guru Mata Pelajaran</label>
+                        <input type="text" id="inputGuru" value="Budi Santoso, S.Pd., M.Pd." placeholder="Nama lengkap beserta gelar" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- NIP Guru -->
+                    <div>
+                        <label for="inputNipGuru" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">NIP Guru Mata Pelajaran</label>
+                        <input type="text" id="inputNipGuru" value="19880515 201402 1 002" placeholder="Masukkan NIP atau tanda -" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <hr class="border-slate-100 my-2">
+
+                    <!-- Nama Kepala Sekolah -->
+                    <div>
+                        <label for="inputKepsek" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nama Kepala Sekolah</label>
+                        <input type="text" id="inputKepsek" value="Dr. Hj. Siti Aminah, M.Pd." placeholder="Nama lengkap beserta gelar" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- NIP Kepala Sekolah -->
+                    <div>
+                        <label for="inputNipKepsek" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">NIP Kepala Sekolah</label>
+                        <input type="text" id="inputNipKepsek" value="19750820 200012 2 001" placeholder="Masukkan NIP atau tanda -" required
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- Kota & Tanggal Pengesahan (Tambahan Pelengkap) -->
+                    <div>
+                        <label for="inputTanggal" class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Tempat & Tanggal Pengesahan</label>
+                        <input type="text" id="inputTanggal" value="Jakarta, 21 November 2026" placeholder="Contoh: Bandung, 15 Juli 2026"
+                            class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
+
+                    <!-- Tombol Generate -->
+                    <div class="pt-2 flex flex-col gap-2">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-indigo-200 transition flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Generate & Perbarui Modul
+                        </button>
+                        <button type="button" onclick="resetForm()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium py-2 px-4 rounded-xl transition">
+                            Reset ke Default
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Panel Kanan: Pratinjau Dokumen Modul Ajar -->
+        <section class="lg:col-span-8">
+            <div id="dokumenModul" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-10 lg:p-12 print-container">
+                
+                <!-- Kop Judul Modul Ajar -->
+                <div class="text-center border-b-2 border-slate-800 pb-5 mb-7">
+                    <span class="inline-block text-[11px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full mb-2">Pendekatan Pembelajaran Mendalam (Deep Learning)</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight uppercase">Modul Ajar / Rencana Pelaksanaan Pembelajaran</h2>
+                    <p id="outSekolahHeader" class="text-sm sm:text-base font-bold text-slate-700 mt-1 uppercase tracking-wide">SMP Negeri 1 Nusantara</p>
+                </div>
+
+                <!-- Tabel Informasi Umum (Layout Resmi 2 Kolom Sejajar) -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border-l-4 border-indigo-600 px-3 py-2 rounded-r-lg mb-3">A. Informasi Umum</h3>
+                    <div class="overflow-hidden border border-slate-300 rounded-xl">
+                        <table class="w-full text-xs sm:text-sm border-collapse">
+                            <tbody class="divide-y divide-slate-200">
+                                <tr>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 w-1/4 border-r border-slate-200">Satuan Pendidikan</td>
+                                    <td id="outSekolah" class="px-3.5 py-2.5 text-slate-900 font-medium w-1/4 border-r border-slate-200">SMP Negeri 1 Nusantara</td>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 w-1/4 border-r border-slate-200">Tahun Ajaran</td>
+                                    <td id="outTahunAjaran" class="px-3.5 py-2.5 text-slate-900 font-medium w-1/4">2026/2027</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Mata Pelajaran</td>
+                                    <td id="outMapel" class="px-3.5 py-2.5 text-slate-900 font-medium border-r border-slate-200">Matematika</td>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Semester</td>
+                                    <td id="outSemester" class="px-3.5 py-2.5 text-slate-900 font-medium">Ganjil</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Jenjang / Fase</td>
+                                    <td id="outFase" class="px-3.5 py-2.5 text-slate-900 font-medium border-r border-slate-200">SMP / Fase D</td>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Kelas</td>
+                                    <td id="outKelas" class="px-3.5 py-2.5 text-slate-900 font-medium">VIII (Delapan)</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Penyusun / Guru</td>
+                                    <td id="outGuru" class="px-3.5 py-2.5 text-slate-900 font-medium border-r border-slate-200">Budi Santoso, S.Pd., M.Pd.</td>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Alokasi Waktu</td>
+                                    <td class="px-3.5 py-2.5 text-slate-900 font-medium"><span id="outPertemuan">1 Pertemuan</span> (<span id="outAlokasi">2 × 45 Menit</span>)</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Model Pembelajaran</td>
+                                    <td id="outModelInfo" colspan="3" class="px-3.5 py-2.5 text-slate-900 font-medium">Realistic Mathematics Education (RME) & Problem-Based Learning</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 font-semibold text-slate-700 px-3.5 py-2.5 border-r border-slate-200">Materi Pokok</td>
+                                    <td id="outMateri" colspan="3" class="px-3.5 py-2.5 text-slate-900 font-semibold">Sistem Persamaan Linear Dua Variabel (SPLDV) – Konsep dan Pemodelan Kontekstual</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 1. IDENTIFIKASI -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border-l-4 border-indigo-600 px-3 py-2 rounded-r-lg mb-4">1. Identifikasi</h3>
+                    <div class="space-y-4 text-sm leading-relaxed text-slate-700 pl-1">
+                        <div>
+                            <h4 class="font-bold text-slate-900">A. Kesiapan Murid</h4>
+                            <ul class="list-disc pl-5 space-y-1.5 mt-1.5 text-justify">
+                                <li><strong>Pemetaan Pengetahuan Prasyarat:</strong> Murid perlu menguasai operasi hitung aljabar dasar dan Persamaan Linear Satu Variabel (PLSV). Pemetaan dilakukan melalui 2 soal pemantik visual di awal kelas (tanpa skor angka agar tidak memicu kecemasan).</li>
+                                <li><strong>Profil Gaya Belajar:</strong> Akomodasi gaya belajar visual (ilustrasi benda nyata/grafik), kinestetik/taktil (kartu masalah), dan auditori (diskusi kelompok kecil).</li>
+                                <li><strong>Kesiapan Emosional (<em>Math Anxiety</em>):</strong> Menurunkan ketegangan dengan memulai pembelajaran dari teka-teki logika sehari-hari tanpa langsung memunculkan simbol variabel <em>x</em> dan <em>y</em>.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900">B. Karakteristik Materi Pelajaran</h4>
+                            <ul class="list-disc pl-5 space-y-1.5 mt-1.5 text-justify">
+                                <li><strong>Tingkat Abstraksi & Jenis Pengetahuan:</strong> Menjembatani penalaran aritmetika konkret menuju abstraksi aljabar (mencakup pengetahuan konseptual, prosedural, dan penalaran).</li>
+                                <li><strong>Miskonsepsi Umum:</strong> Murid sering menganggap variabel sebagai singkatan nama benda (misal: <em>x = apel</em>), bukan <em>harga</em> atau <em>jumlah</em> dari benda tersebut.</li>
+                                <li><strong>Aplikasi Dunia Nyata:</strong> Pengambilan keputusan ekonomi sehari-hari, seperti membandingkan paket hemat menu kantin, tarif transportasi, dan perencanaan anggaran belanja.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900">C. Dimensi Profil Lulusan</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+                                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                                    <span class="font-bold text-indigo-700 block mb-1">1. Penalaran Kritis</span>
+                                    <p class="text-xs text-slate-600 leading-relaxed">Menganalisis informasi masalah kontekstual, menerjemahkan ke model matematika, dan memverifikasi solusi.</p>
+                                </div>
+                                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                                    <span class="font-bold text-indigo-700 block mb-1">2. Kolaborasi</span>
+                                    <p class="text-xs text-slate-600 leading-relaxed">Bekerja sama dalam kelompok heterogen untuk saling bertukar strategi penyelesaian masalah.</p>
+                                </div>
+                                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                                    <span class="font-bold text-indigo-700 block mb-1">3. Komunikasi</span>
+                                    <p class="text-xs text-slate-600 leading-relaxed">Mempresentasikan argumen matematis menggunakan multi-representasi (gambar, kalimat, simbol).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. DESAIN PEMBELAJARAN -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border-l-4 border-indigo-600 px-3 py-2 rounded-r-lg mb-4">2. Desain Pembelajaran</h3>
+                    <div class="space-y-4 text-sm leading-relaxed text-slate-700 pl-1">
+                        <div>
+                            <h4 class="font-bold text-slate-900">A. Tujuan Pembelajaran (TP)</h4>
+                            <ol id="outTujuanList" class="list-decimal pl-5 space-y-1.5 mt-1.5 text-justify">
+                                <li>Memodelkan situasi permasalahan sehari-hari ke dalam bentuk Sistem Persamaan Linear Dua Variabel (SPLDV) dengan mendefinisikan variabel secara tepat.</li>
+                                <li>Menentukan penyelesaian SPLDV menggunakan strategi penalaran logis (visual/substitusi intuitif) sebelum beralih ke prosedur formal.</li>
+                                <li>Mengevaluasi ketepatan solusi matematis yang diperoleh terhadap konteks permasalahan nyata.</li>
+                            </ol>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900">B. Kerangka Pembelajaran</h4>
+                            <ul class="list-disc pl-5 space-y-1.5 mt-1.5 text-justify">
+                                <li><strong>Praktik Pedagogis (Model Pembelajaran):</strong> Menerapkan model <span id="outModelKerangka" class="font-semibold text-indigo-700">Realistic Mathematics Education (RME) & Problem-Based Learning</span> untuk membangun pemahaman konseptual dari situasi konkret menuju bentuk simbolik abstrak secara bertahap.</li>
+                                <li><strong>Kemitraan Pembelajaran:</strong> Kelompok heterogen (3–4 murid) dengan pembagian peran jelas serta teknik <em>Think-Pair-Share</em>.</li>
+                                <li><strong>Lingkungan Pembelajaran:</strong> Budaya kelas <em>"Safe-to-Fail"</em> (aman untuk mencoba dan keliru) dengan tata letak meja berkelompok agar guru mudah memberikan <em>scaffolding</em>.</li>
+                                <li><strong>Pemanfaatan Digital:</strong> Simulasi visual interaktif menggunakan <strong>Desmos / GeoGebra</strong> melalui proyektor kelas untuk membuktikan perpotongan grafik dua garis secara langsung.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. PENGALAMAN BELAJAR -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border-l-4 border-indigo-600 px-3 py-2 rounded-r-lg mb-4">3. Pengalaman Belajar (Langkah-Langkah Pembelajaran)</h3>
+                    <p class="text-xs text-slate-700 mb-3.5 bg-amber-50/80 border border-amber-200 p-3.5 rounded-xl leading-relaxed">
+                        <strong>Prinsip Pembelajaran Mendalam:</strong> Aktivitas dirancang secara <strong>Berkesadaran (<em>Mindful</em>)</strong> agar murid sadar strategi berpikirnya, <strong>Bermakna (<em>Meaningful</em>)</strong> melalui konteks kehidupan sehari-hari, dan <strong>Menggembirakan (<em>Joyful</em>)</strong> lewat tantangan eksplorasi yang interaktif.
+                    </p>
+                    <div class="overflow-x-auto rounded-xl border border-slate-300">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-slate-800 text-white">
+                                    <th class="p-3 font-semibold w-1/5 border-r border-slate-700">Tahap & Waktu</th>
+                                    <th class="p-3 font-semibold w-1/5 border-r border-slate-700">Siklus Belajar</th>
+                                    <th class="p-3 font-semibold">Aktivitas Guru & Murid</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-700">
+                                <tr>
+                                    <td class="p-3 align-top font-semibold border-r border-slate-200">Pendahuluan<br><span class="text-xs font-normal text-slate-500">(15 Menit)</span></td>
+                                    <td class="p-3 align-top border-r border-slate-200"><span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-md">Koneksi & Kesiapan</span></td>
+                                    <td class="p-3 align-top space-y-1.5 leading-relaxed">
+                                        <p>1. Guru menyapa hangat dan melakukan <em>check-in</em> kesiapan emosi belajar.</p>
+                                        <p>2. <strong>Asesmen Awal:</strong> Menampilkan masalah pemantik visual di awal kelas untuk mengecek prasyarat konsep.</p>
+                                        <p>3. Murid mendiskusikan dugaan awal secara berpasangan (<em>Think-Pair-Share</em>).</p>
+                                    </td>
+                                </tr>
+                                <tr class="bg-slate-50/60">
+                                    <td class="p-3 align-top font-semibold border-r border-slate-200">Inti - Bagian 1<br><span class="text-xs font-normal text-slate-500">(25 Menit)</span></td>
+                                    <td class="p-3 align-top border-r border-slate-200"><span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-md">Memahami</span></td>
+                                    <td class="p-3 align-top space-y-1.5 leading-relaxed">
+                                        <p>1. Murid dalam kelompok mengeksplorasi LKPD berbasis masalah nyata untuk menemukan pola konsep.</p>
+                                        <p>2. Murid menggunakan representasi visual/konkret terlebih dahulu sebelum masuk ke simbol abstrak.</p>
+                                        <p>3. Guru memberikan <em>scaffolding</em> untuk meluruskan miskonsepsi definisi konsep.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 align-top font-semibold border-r border-slate-200">Inti - Bagian 2<br><span class="text-xs font-normal text-slate-500">(30 Menit)</span></td>
+                                    <td class="p-3 align-top border-r border-slate-200"><span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-md">Mengaplikasikan</span></td>
+                                    <td class="p-3 align-top space-y-1.5 leading-relaxed">
+                                        <p>1. Murid memecahkan masalah non-rutin (<em>problem solving</em>) dalam kelompok.</p>
+                                        <p>2. Kelompok menyajikan solusi dengan minimal dua representasi (gambar/tabel dan simbolik).</p>
+                                        <p>3. Guru memanfaatkan simulasi digital interaktif (<strong>Desmos / GeoGebra</strong>) untuk memvisualisasikan hasil.</p>
+                                    </td>
+                                </tr>
+                                <tr class="bg-slate-50/60">
+                                    <td class="p-3 align-top font-semibold border-r border-slate-200">Penutup<br><span class="text-xs font-normal text-slate-500">(20 Menit)</span></td>
+                                    <td class="p-3 align-top border-r border-slate-200"><span class="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-md">Merefleksi</span></td>
+                                    <td class="p-3 align-top space-y-1.5 leading-relaxed">
+                                        <p>1. Presentasi perbandingan strategi antar kelompok dan evaluasi ketepatan solusi.</p>
+                                        <p>2. <strong>Exit Ticket:</strong> Murid menuliskan kesimpulan konsep inti menggunakan bahasa sendiri.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. ASESMEN -->
+                <div class="mb-10">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border-l-4 border-indigo-600 px-3 py-2 rounded-r-lg mb-4">4. Asesmen Pembelajaran</h3>
+                    <div class="space-y-2 text-sm text-slate-700 mb-4 pl-1 leading-relaxed">
+                        <p><strong>A. Asesmen Awal (<em>Assessment for Learning</em>):</strong> Kuis visual singkat untuk mengecek pemahaman prasyarat dan mendeteksi miskonsepsi awal tanpa tekanan nilai.</p>
+                        <p><strong>B. Asesmen Proses (<em>Assessment as/for Learning</em>):</strong> Observasi diskusi kelompok menggunakan pertanyaan pemantik penalaran dan <em>Exit Ticket</em> di akhir sesi.</p>
+                        <p><strong>C. Asesmen Akhir (<em>Assessment of Learning</em>):</strong> Soal pemecahan masalah kontekstual yang dinilai menggunakan rubrik analitik berikut:</p>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-300">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-800 border-b border-slate-300">
+                                    <th class="p-2.5 font-bold border-r border-slate-200 w-1/5">Kriteria</th>
+                                    <th class="p-2.5 font-bold border-r border-slate-200 w-1/5">Perlu Bimbingan (1)</th>
+                                    <th class="p-2.5 font-bold border-r border-slate-200 w-1/5">Berkembang (2)</th>
+                                    <th class="p-2.5 font-bold border-r border-slate-200 w-1/5">Cakap (3)</th>
+                                    <th class="p-2.5 font-bold w-1/5">Mahir (4)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2.5 font-semibold text-slate-800 bg-slate-50/50 border-r border-slate-200">Pemodelan Matematika</td>
+                                    <td class="p-2.5 border-r border-slate-200">Belum mampu mengidentifikasi variabel dan persamaan.</td>
+                                    <td class="p-2.5 border-r border-slate-200">Menyusun satu persamaan benar, variabel kedua masih keliru.</td>
+                                    <td class="p-2.5 border-r border-slate-200">Mendefinisikan kedua variabel dan dua persamaan dengan tepat.</td>
+                                    <td class="p-2.5">Menyusun model sangat tepat, efisien, dengan keterangan lengkap.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5 font-semibold text-slate-800 bg-slate-50/50 border-r border-slate-200">Strategi & Prosedur</td>
+                                    <td class="p-2.5 border-r border-slate-200">Langkah perhitungan tidak terarah dan banyak kesalahan hitung.</td>
+                                    <td class="p-2.5 border-r border-slate-200">Strategi benar, namun terdapat kekeliruan operasi hitung di tengah proses.</td>
+                                    <td class="p-2.5 border-r border-slate-200">Menjalankan prosedur sistematis dan menemukan nilai variabel benar.</td>
+                                    <td class="p-2.5">Langkah sangat logis dan memverifikasi hasil ke persamaan awal.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5 font-semibold text-slate-800 bg-slate-50/50 border-r border-slate-200">Penalaran Kontekstual</td>
+                                    <td class="p-2.5 border-r border-slate-200">Hanya menuliskan angka akhir tanpa kesimpulan konteks soal.</td>
+                                    <td class="p-2.5 border-r border-slate-200">Menghitung total akhir dengan sedikit kekeliruan kesimpulan.</td>
+                                    <td class="p-2.5 border-r border-slate-200">Menyimpulkan kecukupan anggaran dengan benar sesuai soal.</td>
+                                    <td class="p-2.5">Menyimpulkan dengan tepat disertai rincian sisa/kekurangan biaya.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Blok Tanda Tangan / Pengesahan -->
+                <div class="signature-block pt-6 border-t border-slate-300 mt-8">
+                    <div class="grid grid-cols-2 gap-8 text-xs sm:text-sm text-slate-800">
+                        <!-- Kolom Kepala Sekolah -->
+                        <div class="flex flex-col justify-between">
+                            <div>
+                                <p class="text-slate-600">Mengetahui,</p>
+                                <p class="font-semibold">Kepala <span id="outSekolahTtd">SMP Negeri 1 Nusantara</span></p>
+                            </div>
+                            <div class="mt-16">
+                                <p id="outKepsek" class="font-bold underline decoration-slate-400 underline-offset-4">Dr. Hj. Siti Aminah, M.Pd.</p>
+                                <p class="text-xs text-slate-600 mt-1">NIP. <span id="outNipKepsek">19750820 200012 2 001</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Kolom Guru Mata Pelajaran -->
+                        <div class="flex flex-col justify-between pl-4 sm:pl-12">
+                            <div>
+                                <p id="outTanggal" class="text-slate-600">Jakarta, 21 November 2026</p>
+                                <p class="font-semibold">Guru Mata Pelajaran <span id="outMapelTtd">Matematika</span></p>
+                            </div>
+                            <div class="mt-16">
+                                <p id="outGuruTtd" class="font-bold underline decoration-slate-400 underline-offset-4">Budi Santoso, S.Pd., M.Pd.</p>
+                                <p class="text-xs text-slate-600 mt-1">NIP. <span id="outNipGuru">19880515 201402 1 002</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =================================================================== -->
+                <!-- LAMPIRAN 1: LEMBAR KERJA PESERTA DIDIK (LKPD)                       -->
+                <!-- =================================================================== -->
+                <div class="page-break pt-8 border-t-2 border-dashed border-slate-300 mt-12">
+                    <div class="text-center border-b-2 border-slate-800 pb-4 mb-6">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-0.5 rounded-full mb-1">Lampiran 1</span>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 uppercase">Lembar Kerja Peserta Didik (LKPD)</h3>
+                        <p id="outLkpdMateri" class="text-xs sm:text-sm font-semibold text-slate-700 mt-1">Sistem Persamaan Linear Dua Variabel (SPLDV) – Konsep dan Pemodelan Kontekstual</p>
+                    </div>
+
+                    <!-- Identitas Kelompok LKPD -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-300 rounded-xl p-4 mb-6 text-xs sm:text-sm">
+                        <div class="space-y-2">
+                            <p><strong>Satuan Pendidikan :</strong> <span id="outLkpdSekolah">SMP Negeri 1 Nusantara</span></p>
+                            <p><strong>Mata Pelajaran / Kelas :</strong> <span id="outLkpdMapel">Matematika</span> / <span id="outLkpdKelas">VIII (Delapan)</span></p>
+                            <p><strong>Nama Kelompok :</strong> ......................................................</p>
+                        </div>
+                        <div class="space-y-1.5">
+                            <p class="font-bold text-slate-800">Anggota Kelompok:</p>
+                            <p>1. ........................................ (Ketua / Pencatat)</p>
+                            <p>2. ........................................ (Pemeriksa Logika)</p>
+                            <p>3. ........................................ (Juru Bicara)</p>
+                        </div>
+                    </div>
+
+                    <!-- Petunjuk Belajar LKPD -->
+                    <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 mb-6 text-xs text-slate-700 leading-relaxed">
+                        <strong class="text-indigo-900 block mb-1">Petunjuk Pengerjaan (Berkesadaran & Kolaboratif):</strong>
+                        <ol class="list-decimal pl-4 space-y-1">
+                            <li>Bacalah studi kasus di bawah ini dengan saksama bersama anggota kelompokmu.</li>
+                            <li>Gunakan gambar, tabel, atau coretan logika terlebih dahulu sebelum menuliskan simbol aljabar.</li>
+                            <li>Diskusikan alasan di balik setiap langkah yang kalian pilih (jangan langsung menebak rumus).</li>
+                        </ol>
+                    </div>
+
+                    <!-- Aktivitas 1: Memahami -->
+                    <div class="mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white bg-emerald-700 px-3 py-1.5 rounded-t-lg inline-block">Aktivitas 1: Eksplorasi Masalah (Memahami)</h4>
+                        <div class="border border-slate-300 rounded-b-xl rounded-tr-xl p-4 text-xs sm:text-sm text-slate-700 space-y-3">
+                            <div class="bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r-lg">
+                                <p class="font-semibold text-slate-900 mb-1">Studi Kasus Kantin Sehat:</p>
+                                <p class="leading-relaxed">Pada jam istirahat, Rina membeli <strong>2 paket roti bakar dan 1 kotak susu</strong> seharga <strong>Rp11.000,00</strong>. Di kantin yang sama, Bima membeli <strong>1 paket roti bakar dan 1 kotak susu</strong> seharga <strong>Rp7.000,00</strong>.</p>
+                            </div>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="font-semibold text-slate-800">1. Tanpa menggunakan rumus aljabar terlebih dahulu, jelaskan bagaimana cara kalian menemukan harga 1 paket roti bakar dan 1 kotak susu dari perbandingan belanja Rina dan Bima!</p>
+                                    <div class="mt-2 h-20 border border-dashed border-slate-400 rounded-lg bg-slate-50/50 p-2 text-[11px] text-slate-400">Tuliskan strategi logika atau gambar ilustrasi kelompokmu di sini...</div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-slate-800">2. Jika kita memisalkan variabel: <span class="italic font-normal">x = harga 1 paket roti bakar</span> dan <span class="italic font-normal">y = harga 1 kotak susu</span>, tuliskan dua persamaan matematika yang mewakili belanja Rina dan Bima!</p>
+                                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div class="border border-dashed border-slate-400 rounded-lg p-2.5 bg-slate-50/50 text-xs text-slate-500">Persamaan 1 (Rina): ..................................</div>
+                                        <div class="border border-dashed border-slate-400 rounded-lg p-2.5 bg-slate-50/50 text-xs text-slate-500">Persamaan 2 (Bima): ..................................</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aktivitas 2: Mengaplikasikan & Merefleksi -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white bg-blue-700 px-3 py-1.5 rounded-t-lg inline-block">Aktivitas 2: Tantangan Aplikasi & Refleksi</h4>
+                        <div class="border border-slate-300 rounded-b-xl rounded-tr-xl p-4 text-xs sm:text-sm text-slate-700 space-y-3">
+                            <p class="font-semibold text-slate-800">3. Jika Dika membawa uang Rp20.000,00 dan ingin membeli 3 paket roti bakar serta 2 kotak susu di kantin tersebut, apakah uang Dika cukup? Buktikan dengan langkah sistematis!</p>
+                            <div class="h-24 border border-dashed border-slate-400 rounded-lg bg-slate-50/50 p-2 text-[11px] text-slate-400">Tuliskan perhitungan dan kesimpulan akhir kelompokmu di sini...</div>
+                            
+                            <div class="bg-purple-50/70 border border-purple-200 rounded-lg p-3 mt-2">
+                                <p class="font-bold text-purple-900 text-xs mb-1">Refleksi Kelompok (Exit Ticket):</p>
+                                <p class="text-xs text-slate-700">Bagian mana dari permasalahan hari ini yang paling menantang, dan strategi apa yang membantu kelompok kalian menyelesaikannya?</p>
+                                <div class="mt-2 border-b border-dotted border-slate-400 h-5"></div>
+                                <div class="mt-2 border-b border-dotted border-slate-400 h-5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =================================================================== -->
+                <!-- LAMPIRAN 2: KERANGKA SLIDE PRESENTASI (PPT)                         -->
+                <!-- =================================================================== -->
+                <div class="page-break pt-8 border-t-2 border-dashed border-slate-300 mt-12">
+                    <div class="text-center border-b-2 border-slate-800 pb-4 mb-6">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-0.5 rounded-full mb-1">Lampiran 2</span>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 uppercase">Kerangka Bahan Tayang / Slide Presentasi (PPT)</h3>
+                        <p class="text-xs text-slate-600 mt-1">Panduan visual bagi guru untuk memfasilitasi Pembelajaran Mendalam di kelas</p>
+                    </div>
+
+                    <!-- Grid Visual Slide PPT (6 Slide Terstruktur) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <!-- Slide 1 -->
+                        <div class="border border-slate-300 rounded-xl overflow-hidden shadow-xs flex flex-col">
+                            <div class="bg-indigo-800 text-white px-3.5 py-2 font-bold flex justify-between items-center">
+                                <span>SLIDE 1: Sampul & Tujuan</span>
+                                <span class="text-[10px] bg-indigo-600 px-2 py-0.5 rounded">Pembuka</span>
+                            </div>
+                            <div class="p-3.5 bg-slate-50 flex-1 space-y-1.5 text-slate-700">
+                                <p class="font-bold text-slate-900 text-sm" id="outPptMateri">Sistem Persamaan Linear Dua Variabel (SPLDV)</p>
+                                <p class="text-slate-600"><strong>Mapel / Kelas:</strong> <span id="outPptMapel">Matematika</span> • <span id="outPptKelas">VIII (Delapan)</span></p>
+                                <p class="text-slate-600"><strong>Konten Visual:</strong> Menampilkan pertanyaan pemantik utama & tujuan pembelajaran dengan bahasa yang ramah siswa.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2 -->
+                        <div class="border border-slate-300 rounded-xl overflow-hidden shadow-xs flex flex-col">
+                            <div class="bg-slate-800 text-white px-3.5 py-2 font-bold flex justify-between items-center">
+                                <span>SLIDE 2: Apersepsi & Kesiapan</span>
+                                <span class="text-[10px] bg-slate-600 px-2 py-0.5 rounded">Asesmen Awal</span>
+                            </div>
+                            <div class="p-3.5 bg-white flex-1 space-y-1.5 text-slate-700">
+                                <p class="font-bold text-slate-900">Teka-Teki Timbangan / Harga Kantin</p>
+                                <p><strong>Visual:</strong> Dua gambar paket jajanan beserta total harganya (tanpa simbol <em>x</em> dan <em>y</em>).</p>
+                                <p><strong>Instruksi:</strong> Ajak murid menebak harga satuan dalam 2 menit (<em>Think-Pair-Share</em>).</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3 -->
+                        <div class="border border-slate-300 rounded-xl overflow-hidden shadow-xs flex flex-col">
+                            <div class="bg-emerald-700 text-white px-3.5 py-2 font-bold flex justify-between items-center">
+                                <span>SLIDE 3: Eksplorasi Konsep</span>
+                                <span class="text-[10px] bg-emerald-600 px-2 py-0.5 rounded">Memahami</span>
+                            </div>
+                            <div class="p-3.5 bg-white flex-1 space-y-1.5 text-slate-700">
+                                <p class="font-bold text-slate-900">Dari Gambar ke Model Matematika</p>
+                                <p><strong>Visual:</strong> Animasi transisi ikon benda menjadi simbol variabel disertai penekanan makna variabel (harga/jumlah).</p>
+                                <p><strong>Fokus:</strong> Mengarahkan murid mengerjakan Aktivitas 1 pada LKPD.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 4 -->
+                        <div class="border border-slate-300 rounded-xl overflow-hidden shadow-xs flex flex-col">
+                            <div class="bg-blue-700 text-white px-3.5 py-2 font-bold flex justify-between items-center">
+                                <span>SLIDE 4: Contoh Soal & Pembahasan</span>
+                                <span class="text-[10px] bg-blue-600 px-2 py-0.5 rounded">Penalaran</span>
+                            </div>
+                            <div class="p-3.5 bg-white flex-1 space-y-2 text-slate-700">
+                                <div class="bg-blue-50/80 border border-blue-200 p-2 rounded-lg">
+                                    <p class="font-bold text-blue-950">Contoh Soal:</p>
+                                    <p>Harga <strong>3 buku tulis dan 2 pensil</strong> adalah <strong>Rp13.000</strong>, sedangkan <strong>1 buku tulis dan 2 pensil</strong> adalah <strong>Rp7.000</strong>. Berapa harga 1 buku tulis dan 1 pensil?</p>
+                                </div>
+                                <div class="space-y-1 text-[11px] leading-relaxed">
+                                    <p class="font-bold text-slate-900">Penjelasan Langkah demi Langkah:</p>
+                                    <p><strong>1. Pemisalan:</strong> Misal <em>x</em> = harga 1 buku, <em>y</em> = harga 1 pensil.</p>
+                                    <p><strong>2. Model:</strong> (1) 3<em>x</em> + 2<em>y</em> = 13.000 &nbsp;|&nbsp; (2) <em>x</em> + 2<em>y</em> = 7.000.</p>
+                                    <p><strong>3. Penalaran Selisih (Eliminasi):</strong> Selisih belanja keduanya adalah 2 buku = Rp6.000, maka <strong><em>x</em> = Rp3.000</strong>.</p>
+                                    <p><strong>4. Substitusi:</strong> 3.000 + 2<em>y</em> = 7.000 &rarr; 2<em>y</em> = 4.000 &rarr; <strong><em>y</em> = Rp2.000</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 5 -->
+                        <div class="border border-slate-300 rounded-xl overflow-hidden shadow-xs flex flex-col">
+                            <div class="bg-amber-700 text-white px-3.5 py-2 font-bold flex justify-between items-center">
+                                <span>SLIDE 5: Simulasi & Latihan HOTS</span>
+                                <span class="text-[10px] bg-amber-600 px-2 py-0.5 rounded">Mengaplikasikan</span>
+                            </div>
+                            <div class="p-3.5 bg-white flex-1 space-y-2 text-slate-700">
+                                <p class="font-bold text-slate-900">Pembuktian Grafik (Desmos / GeoGebra)</p>
+                                <p>Menampilkan titik potong grafik (3000, 2000) yang cocok dengan hasil perhitungan.</p>
+                                <div class="bg-amber-50/80 border border-amber-200 p-2 rounded-lg text-[11px]">
+                                    <p class="font-bold text-amber-950">Tantangan Kelompok (HOTS):</p>
+                                    <p>Jika Andi memiliki Rp15.000 dan ingin membeli 2 buku dan 4 pensil, berapa uang kembaliannya? <em>(Jawaban: Rp15.000 - [2(3.000) + 4(2.000)] = Rp1.000)</em>.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slide 6 -->
+                        <div class="border border-slate-300 rounded-xl overflow-hidden shadow-xs flex flex-col">
+                            <div class="bg-purple-800 text-white px-3.5 py-2 font-bold flex justify-between items-center">
+                                <span>SLIDE 6: Refleksi & Kesimpulan</span>
+                                <span class="text-[10px] bg-purple-600 px-2 py-0.5 rounded">Merefleksi</span>
+                            </div>
+                            <div class="p-3.5 bg-white flex-1 space-y-1.5 text-slate-700">
+                                <p class="font-bold text-slate-900">Rangkuman & Exit Ticket</p>
+                                <p><strong>Poin Kunci:</strong> Variabel mewakili nilai/harga satuan, dan solusi adalah nilai yang memenuhi kedua persamaan sekaligus.</p>
+                                <p><strong>Penutup:</strong> Murid mengisi refleksi akhir di LKPD sebelum kelas berakhir.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Script Interaktif -->
+    <script>
+        // Fungsi untuk memperbarui dokumen berdasarkan input pengguna
+        function generateModul(event) {
+            if (event) event.preventDefault();
+
+            // Mengambil nilai identitas dasar
+            const sekolah = document.getElementById('inputSekolah').value.trim() || 'Nama Sekolah';
+            const mapel = document.getElementById('inputMapel').value.trim() || 'Mata Pelajaran';
+            const guru = document.getElementById('inputGuru').value.trim() || 'Nama Guru';
+            const nipGuru = document.getElementById('inputNipGuru').value.trim() || '-';
+            const kepsek = document.getElementById('inputKepsek').value.trim() || 'Nama Kepala Sekolah';
+            const nipKepsek = document.getElementById('inputNipKepsek').value.trim() || '-';
+            const tanggal = document.getElementById('inputTanggal').value.trim() || 'Tempat, Tanggal';
+
+            // Mengambil nilai parameter kurikulum & pembelajaran
+            const tahunAjaran = document.getElementById('inputTahunAjaran').value.trim() || '2026/2027';
+            const semester = document.getElementById('inputSemester').value;
+            const fase = document.getElementById('inputFase').value.trim() || 'Fase';
+            const kelas = document.getElementById('inputKelas').value.trim() || 'Kelas';
+            const pertemuan = document.getElementById('inputPertemuan').value.trim() || '1 Pertemuan';
+            const alokasi = document.getElementById('inputAlokasi').value.trim() || '2 × 45 Menit';
+            const model = document.getElementById('inputModel').value.trim() || 'Problem-Based Learning';
+            const materi = document.getElementById('inputMateri').value.trim() || 'Materi Pokok';
+            const tujuanRaw = document.getElementById('inputTujuan').value.trim();
+
+            // Memperbarui elemen identitas sekolah & guru
+            document.getElementById('outSekolahHeader').textContent = sekolah;
+            document.getElementById('outSekolah').textContent = sekolah;
+            document.getElementById('outSekolahTtd').textContent = sekolah;
+
+            document.getElementById('outMapel').textContent = mapel;
+            document.getElementById('outMapelTtd').textContent = mapel;
+
+            document.getElementById('outGuru').textContent = guru;
+            document.getElementById('outGuruTtd').textContent = guru;
+            document.getElementById('outNipGuru').textContent = nipGuru;
+
+            document.getElementById('outKepsek').textContent = kepsek;
+            document.getElementById('outNipKepsek').textContent = nipKepsek;
+            document.getElementById('outTanggal').textContent = tanggal;
+
+            // Memperbarui elemen kurikulum & pembelajaran
+            document.getElementById('outTahunAjaran').textContent = tahunAjaran;
+            document.getElementById('outSemester').textContent = semester;
+            document.getElementById('outFase').textContent = fase;
+            document.getElementById('outKelas').textContent = kelas;
+            document.getElementById('outPertemuan').textContent = pertemuan;
+            document.getElementById('outAlokasi').textContent = alokasi;
+            document.getElementById('outModelInfo').textContent = model;
+            document.getElementById('outModelKerangka').textContent = model;
+            document.getElementById('outMateri').textContent = materi;
+
+            // Memperbarui identitas pada Lampiran LKPD & PPT
+            document.getElementById('outLkpdSekolah').textContent = sekolah;
+            document.getElementById('outLkpdMapel').textContent = mapel;
+            document.getElementById('outLkpdKelas').textContent = kelas;
+            document.getElementById('outLkpdMateri').textContent = materi;
+
+            document.getElementById('outPptMateri').textContent = materi;
+            document.getElementById('outPptMapel').textContent = mapel;
+            document.getElementById('outPptKelas').textContent = kelas;
+
+            // Memperbarui daftar Tujuan Pembelajaran (memecah baris baru menjadi elemen <li>)
+            const tujuanListEl = document.getElementById('outTujuanList');
+            tujuanListEl.innerHTML = '';
+            const barisTujuan = tujuanRaw.split('\n').filter(baris => baris.trim() !== '');
+            
+            if (barisTujuan.length > 0) {
+                barisTujuan.forEach(item => {
+                    const li = document.createElement('li');
+                    // Menghapus nomor manual jika pengguna mengetik "1. " di awal baris
+                    li.textContent = item.replace(/^\d+[\.\)]\s*/, '').trim();
+                    tujuanListEl.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'Belum ada tujuan pembelajaran yang dimasukkan.';
+                tujuanListEl.appendChild(li);
+            }
+
+            // Menampilkan notifikasi sukses
+            showToast('Seluruh data Modul Ajar berhasil diperbarui!');
+        }
+
+        // Fungsi untuk mereset formulir ke nilai awal
+        function resetForm() {
+            document.getElementById('inputSekolah').value = 'SMP Negeri 1 Nusantara';
+            document.getElementById('inputMapel').value = 'Matematika';
+            document.getElementById('inputTahunAjaran').value = '2026/2027';
+            document.getElementById('inputSemester').value = 'Ganjil';
+            document.getElementById('inputFase').value = 'SMP / Fase D';
+            document.getElementById('inputKelas').value = 'VIII (Delapan)';
+            document.getElementById('inputPertemuan').value = '1 Pertemuan';
+            document.getElementById('inputAlokasi').value = '2 × 45 Menit';
+            document.getElementById('inputModel').value = 'Realistic Mathematics Education (RME) & Problem-Based Learning';
+            document.getElementById('inputMateri').value = 'Sistem Persamaan Linear Dua Variabel (SPLDV) – Konsep dan Pemodelan Kontekstual';
+            document.getElementById('inputTujuan').value = 'Memodelkan situasi permasalahan sehari-hari ke dalam bentuk Sistem Persamaan Linear Dua Variabel (SPLDV) dengan mendefinisikan variabel secara tepat.\nMenentukan penyelesaian SPLDV menggunakan strategi penalaran logis (visual/substitusi intuitif) sebelum beralih ke prosedur formal.\nMengevaluasi ketepatan solusi matematis yang diperoleh terhadap konteks permasalahan nyata.';
+            document.getElementById('inputGuru').value = 'Budi Santoso, S.Pd., M.Pd.';
+            document.getElementById('inputNipGuru').value = '19880515 201402 1 002';
+            document.getElementById('inputKepsek').value = 'Dr. Hj. Siti Aminah, M.Pd.';
+            document.getElementById('inputNipKepsek').value = '19750820 200012 2 001';
+            document.getElementById('inputTanggal').value = 'Jakarta, 21 November 2026';
+            
+            generateModul(null);
+            showToast('Formulir dikembalikan ke pengaturan awal.');
+        }
+
+        // Fungsi untuk menyalin seluruh teks dokumen ke clipboard
+        function copyDocument() {
+            const dokumenElement = document.getElementById('dokumenModul');
+            const range = document.createRange();
+            range.selectNode(dokumenElement);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                showToast('Seluruh isi Modul Ajar berhasil disalin ke clipboard!');
+            } catch (err) {
+                showToast('Gagal menyalin teks. Silakan salin secara manual.');
+            }
+            window.getSelection().removeAllRanges();
+        }
+
+        // Fungsi menampilkan notifikasi toast
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = message;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
